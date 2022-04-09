@@ -1,0 +1,370 @@
+/*
+ * Libraries
+ */
+const {SlashCommandBuilder} = require('@discordjs/builders');
+const {MessageButton, MessageActionRow} = require("discord.js");
+
+/*
+ * Singleton
+ */
+const {Database} = require("../managers/Database");
+
+/*
+ * Utils
+ */
+const {Logger} = require("../utils/Logger");
+const {Lang} = require("../utils/Lang");
+
+/*
+ * Constants
+ */
+const {Category} = require("../cons/Category");
+
+// TODO: category embed settings
+module.exports = {
+    // Data containing command all the subcommands
+    data: new SlashCommandBuilder()
+        .setName('panel')
+        .setDescription('Replies with panel.')
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('ticket-category')
+                .setDescription('Ticket category settings')
+                .addStringOption(option =>
+                    option.setName('type')
+                        .setDescription('Choose for which category you are setting category.')
+                        .setRequired(true)
+                        .addChoice('TICKET', 'ticket')
+                        .addChoice('BUG', 'bug'))
+                .addStringOption(option =>
+                    option.setName('categoryid')
+                        .setDescription('Enter new value.')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('closed-category')
+                .setDescription('Ticket closed category settings')
+                .addStringOption(option =>
+                    option.setName('type')
+                        .setDescription('Choose for which category you are setting category.')
+                        .setRequired(true)
+                        .addChoice('TICKET', 'ticket')
+                        .addChoice('BUG', 'bug'))
+                .addStringOption(option =>
+                    option.setName('categoryid')
+                        .setDescription('Enter new value.')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('category-add')
+                .setDescription('Ticket categories settings')
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('emoji')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('creation-category-id')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('closed-category-id')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('allowed-roles')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('ping-roles')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('message')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('title')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('description')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('color')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('button-text')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('button-color')
+                        .setDescription('Enter new value.')
+                        .setRequired(true)
+                        .addChoice('Primary', 'PRIMARY')
+                        .addChoice('Secondary', 'SECONDARY')
+                        .addChoice('Danger', 'DANGER')
+                        .addChoice('Success', 'SUCCESS')
+                ))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('category-remove')
+                .setDescription('Ticket category remove.')
+                .addStringOption(option =>
+                    option.setName('name')
+                        .setDescription('Type name.')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('settings-panel')
+                .setDescription('Setups panel properties.')
+                .addStringOption(option =>
+                    option.setName('type')
+                        .setDescription('Choose setup type.')
+                        .setRequired(true)
+                        .addChoice('title', 'title')
+                        .addChoice('description', 'description')
+                        .addChoice('color', 'color')
+                        .addChoice('footer text', 'footer-text'))
+                .addStringOption(option =>
+                    option.setName('value')
+                        .setDescription('Enter new value.')
+                        .setRequired(true))
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('send')
+                .setDescription('Sends and setups panel.')
+        ),
+    //TODO: Complete setup and Settings
+    // create more functions for panel
+    async execute(interaction) {
+        const botGuild = await Database.getCachedGuild(interaction.guild);
+        //Check if the guild is cached.
+        if (botGuild == null) {
+            Logger.log(`&4Could not find guild ${interaction.guild.id} in cache.`);
+            return;
+        }
+        //Getting name of the command.
+        const command = interaction.options._subcommand;
+
+        //Helper variables throughout the switch below.
+        let categories;
+        let buttons;
+        let name;
+        let catName;
+        let id;
+        let lang;
+        let ticketCategories;
+
+        //Identify command and execute it.
+        switch (command) {
+            case 'closed-category':
+                categories = JSON.parse(botGuild.ticketCategoriesJSON);
+                name = interaction.options._hoistedOptions[0].value;
+                id = interaction.options._hoistedOptions[1].value;
+                lang = botGuild.language;
+                categories[name].closed_category_id = id;
+
+                interaction.reply({
+                    content: Lang.get("ticket-creation-category-changed", lang),
+                    ephemeral: true
+                });
+
+                await Database.executeUpdate("UPDATE guild_panels SET categories = ? WHERE guild_id = ?",
+                    [JSON.stringify(categories), interaction.guild.id]);
+
+                ticketCategories = new Map();
+                // Update the cache
+                for (let i = 0; i < Object.keys(categories).length; i++) {
+                    const cat = categories[Object.keys(categories)[i]];
+
+                    const category = new Category(Object.keys(categories)[i], cat.category_id,
+                        id, cat.allowed_roles_id, cat.ping_roles_id, cat.message, cat.embed);
+
+                    ticketCategories.set(Object.keys(categories)[i], category);
+                }
+                botGuild.ticketCategories = ticketCategories;
+                break;
+            case 'ticket-category':
+                categories = JSON.parse(botGuild.ticketCategoriesJSON);
+                name = interaction.options._hoistedOptions[0].value;
+                id = interaction.options._hoistedOptions[1].value;
+                lang = botGuild.language;
+                categories[name].category_id = id;
+                interaction.reply({
+                    content: Lang.get("ticket-creation-category-changed", lang),
+                    ephemeral: true
+                });
+
+                await Database.executeUpdate("UPDATE guild_panels SET categories = ? WHERE guild_id = ?", [JSON.stringify(categories), interaction.guild.id]);
+                ticketCategories = new Map();
+                // Update the cache
+                for (let i = 0; i < Object.keys(categories).length; i++) {
+                    const cat = categories[Object.keys(categories)[i]];
+
+                    const category = new Category(Object.keys(categories)[i], id,
+                        categories[name].closed_category_id, cat.allowed_roles_id,
+                        cat.ping_roles_id, cat.message, cat.embed);
+
+                    ticketCategories.set(Object.keys(categories)[i], category);
+                }
+                botGuild.ticketCategories = ticketCategories;
+                break;
+            case 'settings-panel':
+                const property = interaction.options._hoistedOptions[0].value;
+                const value = interaction.options._hoistedOptions[1].value;
+                let panel;
+                switch (property) {
+                    case "title":
+                        panel = JSON.parse(botGuild.panel);
+                        if (value === "delete" || value === "remove" || value === "null") {
+                            delete panel.title;
+                        } else {
+                            panel.title = value;
+                        }
+                        botGuild.panel = JSON.stringify(panel);
+                        interaction.reply({
+                            content: Lang.get("panel-title-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
+                        break;
+                    case "description":
+                        panel = JSON.parse(botGuild.panel);
+                        panel.description = value.split("[enter]");
+                        botGuild.panel = JSON.stringify(panel);
+                        interaction.reply({
+                            content: Lang.get("panel-description-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
+                        break;
+                    case "color":
+                        panel = JSON.parse(botGuild.panel);
+                        panel.color = value;
+                        botGuild.panel = JSON.stringify(panel);
+                        interaction.reply({
+                            content: Lang.get("panel-color-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
+                        break;
+                    case "footer-text":
+                        panel = JSON.parse(botGuild.panel);
+                        if (value === "delete" || value === "remove" || value === "null") {
+                            delete panel.footer;
+                        } else if (panel.footer == null) {
+                            panel.footer = {};
+                            panel.footer.text = value;
+                        } else {
+                            panel.footer.text = value;
+                        }
+                        botGuild.panel = JSON.stringify(panel);
+                        interaction.reply({
+                            content: Lang.get("panel-footer-text-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
+                        break;
+                }
+                break;
+            case 'category-remove':
+                catName = interaction.options._hoistedOptions[0].value;
+                categories = JSON.parse(botGuild.ticketCategoriesJSON);
+                delete categories[catName];
+                buttons = JSON.parse(botGuild.panelButtons);
+                delete buttons[catName];
+                botGuild.ticketCategoriesJSON = categories;
+                botGuild.ticketCategories.delete(catName);
+                botGuild.panelButtons = JSON.stringify(buttons);
+                await Database.executeUpdate("UPDATE guild_panels SET categories = ?, buttons = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), botGuild.panelButtons, interaction.guild.id]);
+                break;
+            case 'category-add':
+                catName = interaction.options._hoistedOptions[0].value;
+                const emoji = interaction.options._hoistedOptions[1].value;
+                const creationId = interaction.options._hoistedOptions[2].value;
+                const closedId = interaction.options._hoistedOptions[3].value;
+                const allowedRole = interaction.options._hoistedOptions[4].value;
+                const pingRole = interaction.options._hoistedOptions[5].value;
+                const message = interaction.options._hoistedOptions[6].value;
+                const title = interaction.options._hoistedOptions[7].value;
+                const description = interaction.options._hoistedOptions[8].value;
+                const color = interaction.options._hoistedOptions[9].value;
+                const buttonText = interaction.options._hoistedOptions[10].value;
+                const buttonColor = interaction.options._hoistedOptions[11].value;
+
+                console.log(botGuild.ticketCategories);
+
+                categories = JSON.parse(botGuild.ticketCategoriesJSON);
+                categories[catName] = {};
+                categories[catName].category_id = creationId;
+                categories[catName].closed_category_id = closedId;
+                categories[catName].allowed_roles_id = [];
+                categories[catName].allowed_roles_id.push(allowedRole);
+                categories[catName].ping_roles_id = [];
+                categories[catName].ping_roles_id.push(pingRole);
+                categories[catName].message = message;
+                categories[catName].embed = {};
+                if (title !== 'none')
+                    categories[catName].embed["title"] = title;
+                categories[catName].embed["description"] = description;
+                categories[catName].embed["color"] = color;
+                botGuild.ticketCategoriesJSON = categories;
+                botGuild.ticketCategories.set(catName, categories[catName]);
+
+                buttons = JSON.parse(botGuild.panelButtons);
+                buttons[catName] = {};
+                buttons[catName].name = buttonText;
+                buttons[catName].id = catName;
+                buttons[catName].color = buttonColor;
+                buttons[catName].emoji = emoji;
+                botGuild.panelButtons = JSON.stringify(buttons);
+                await Database.executeUpdate("UPDATE guild_panels SET categories = ?, buttons = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), botGuild.panelButtons, interaction.guild.id]);
+
+                interaction.reply({
+                    content: Lang.get("panel-footer-text-changed", botGuild.language),
+                    ephemeral: true
+                });
+                break;
+            case 'send' :
+                await sendPanel(interaction, botGuild);
+                break;
+        }
+    },
+};
+
+function sendPanel(interaction, botGuild) {
+    const channel = interaction.channel;
+
+    const lang = botGuild.language;
+    const row = new MessageActionRow();
+
+    const buttonList = JSON.parse(botGuild.panelButtons);
+
+    // Create the buttons
+    for (let i = 0; i < Object.keys(buttonList).length; i++) {
+        const button = buttonList[Object.keys(buttonList)[i]];
+        const messageButton = new MessageButton();
+        messageButton.setCustomId(button.id);
+        messageButton.setLabel(button.name);
+        messageButton.setStyle(button.color);
+        messageButton.setEmoji(button.emoji);
+        row.addComponents(messageButton);
+    }
+
+    const embed = JSON.parse(botGuild.panel);
+    // Build description
+    embed.description = embed.description.join("\n");
+
+    channel.send({ephemeral: false, embeds: [embed], components: [row]}).then(message => {
+        Database.executeUpdate('UPDATE guild_panels SET channel_id = ?, message_id = ? WHERE guild_id = ?', [channel.id, message.id, interaction.guild.id]);
+    });
+
+    interaction.reply({content: Lang.get("panel-created", lang), ephemeral: true});
+}

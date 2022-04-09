@@ -1,0 +1,10 @@
+{
+  "token": "TOKEN",
+  "language": "en",
+  "sql": {
+    "host": "localhost",
+    "user": "root",
+    "password": "password",
+    "database": "ticketbot"
+  }
+}
