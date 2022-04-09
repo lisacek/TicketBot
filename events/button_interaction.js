@@ -104,14 +104,24 @@ async function openTicket(interaction, channel, guild, botGuild) {
         });
         return;
     }
+    const embed = {
+        title: "Ticket",
+        description: "Ticket was re-opened.",
+        color: 0x00ff00
+    }
+    const row = new MessageActionRow()
+        .addComponents(new MessageButton()
+            .setStyle('PRIMARY')
+            .setLabel('Close')
+            .setCustomId('close')
+            .setEmoji('🔒'));
     await channel.permissionOverwrites.edit(interaction.user.id, {
         VIEW_CHANNEL: true,
         SEND_MESSAGES: true
     });
-    await interaction.message.delete();
     ticket.status = 0;
     await channel.setParent(botGuild.ticketCategories.get(ticket.type).categoryId);
-    interaction.reply({content: "Reopened ticket.", ephemeral: true});
+    interaction.reply({embeds: [embed], components: [row], ephemeral: false});
     await Database.executeUpdate("UPDATE tickets SET status = 0, closed_at = 0 WHERE channel_id = ?", [interaction.channel.id]);
 }
 

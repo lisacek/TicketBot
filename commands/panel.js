@@ -121,6 +121,26 @@ module.exports = {
                         .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('settings-category')
+                .setDescription('Setups panel properties.')
+                .addStringOption(option =>
+                    option.setName('category')
+                        .setDescription('Write category type.')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('type')
+                        .setDescription('Choose setup type.')
+                        .setRequired(true)
+                        .addChoice('title', 'title')
+                        .addChoice('description', 'description')
+                        .addChoice('color', 'color')
+                        .addChoice('footer text', 'footer-text'))
+                .addStringOption(option =>
+                    option.setName('value')
+                        .setDescription('Enter new value.')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('settings-panel')
                 .setDescription('Setups panel properties.')
                 .addStringOption(option =>
@@ -134,13 +154,12 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName('value')
                         .setDescription('Enter new value.')
-                        .setRequired(true))
-        )
+                        .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('send')
-                .setDescription('Sends and setups panel.')
-        ),
+                .setDescription('Sends and setups panel.')),
+
     //TODO: Complete setup and Settings
     // create more functions for panel
     async execute(interaction) {
@@ -161,6 +180,10 @@ module.exports = {
         let id;
         let lang;
         let ticketCategories;
+        let property;
+        let value;
+        let panel;
+        let cache;
 
         //Identify command and execute it.
         switch (command) {
@@ -216,10 +239,104 @@ module.exports = {
                 }
                 botGuild.ticketCategories = ticketCategories;
                 break;
+            case 'settings-category':
+                const category = interaction.options._hoistedOptions[0].value;
+                property = interaction.options._hoistedOptions[1].value;
+                value = interaction.options._hoistedOptions[2].value;
+
+                switch (property) {
+                    case "title":
+                        panel = botGuild.ticketCategories.get(category).embed;
+                        if (value === "delete" || value === "remove" || value === "null") {
+                            delete panel.title;
+                        } else {
+                            panel.title = value;
+                        }
+
+                        try {
+                            cache = JSON.parse(botGuild.ticketCategoriesJSON);
+                        } catch (e) {
+                            cache = botGuild.ticketCategoriesJSON;
+                        }
+
+                        cache[category].embed = panel;
+                        botGuild.ticketCategoriesJSON = cache;
+
+                        interaction.reply({
+                            content: Lang.get("panel-title-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET categories = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), interaction.guild.id]);
+                        break;
+                    case
+                    "description"
+                    :
+                        panel = botGuild.ticketCategories.get(category).embed;
+                        panel.description = value.split("[enter]");
+                        try {
+                            cache = JSON.parse(botGuild.ticketCategoriesJSON);
+                        } catch (e) {
+                            cache = botGuild.ticketCategoriesJSON;
+                        }
+
+                        cache[category].embed = panel;
+                        botGuild.ticketCategoriesJSON = cache;
+                        interaction.reply({
+                            content: Lang.get("panel-description-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET categories = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), interaction.guild.id]);
+                        break;
+                    case
+                    "color"
+                    :
+                        panel = botGuild.ticketCategories.get(category).embed;
+                        panel.color = value;
+                        try {
+                            cache = JSON.parse(botGuild.ticketCategoriesJSON);
+                        } catch (e) {
+                            cache = botGuild.ticketCategoriesJSON;
+                        }
+
+                        cache[category].embed = panel;
+                        botGuild.ticketCategoriesJSON = cache;
+                        interaction.reply({
+                            content: Lang.get("panel-color-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET categories = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), interaction.guild.id]);
+                        break;
+                    case
+                    "footer-text"
+                    :
+                        panel = botGuild.ticketCategories.get(category).embed;
+                        if (value === "delete" || value === "remove" || value === "null") {
+                            delete panel.footer;
+                        } else if (panel.footer == null) {
+                            panel.footer = {};
+                            panel.footer.text = value;
+                        } else {
+                            panel.footer.text = value;
+                        }
+                        try {
+                            cache = JSON.parse(botGuild.ticketCategoriesJSON);
+                        } catch (e) {
+                            cache = botGuild.ticketCategoriesJSON;
+                        }
+
+                        cache[category].embed = panel;
+                        botGuild.ticketCategoriesJSON = cache;
+                        interaction.reply({
+                            content: Lang.get("panel-footer-text-changed", botGuild.language),
+                            ephemeral: true
+                        });
+                        await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [JSON.stringify(botGuild.ticketCategoriesJSON), interaction.guild.id]);
+                        break;
+                }
+                break;
             case 'settings-panel':
-                const property = interaction.options._hoistedOptions[0].value;
-                const value = interaction.options._hoistedOptions[1].value;
-                let panel;
+                property = interaction.options._hoistedOptions[0].value;
+                value = interaction.options._hoistedOptions[1].value;
                 switch (property) {
                     case "title":
                         panel = JSON.parse(botGuild.panel);
@@ -299,8 +416,6 @@ module.exports = {
                 const buttonText = interaction.options._hoistedOptions[10].value;
                 const buttonColor = interaction.options._hoistedOptions[11].value;
 
-                console.log(botGuild.ticketCategories);
-
                 categories = JSON.parse(botGuild.ticketCategoriesJSON);
                 categories[catName] = {};
                 categories[catName].category_id = creationId;
@@ -336,7 +451,8 @@ module.exports = {
                 await sendPanel(interaction, botGuild);
                 break;
         }
-    },
+    }
+    ,
 };
 
 function sendPanel(interaction, botGuild) {
