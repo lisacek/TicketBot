@@ -1,12 +1,12 @@
 /*
  * Utils
  */
-const {Logger} = require("../utils/Logger");
+const {Logger} = require("../utils/logger");
 
 /*
  * Singleton
  */
-const {Database} = require("../managers/Database");
+const {Database} = require("../managers/database");
 
 module.exports = {
     name: 'ready',

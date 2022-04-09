@@ -7,18 +7,18 @@ const {MessageButton, MessageActionRow} = require("discord.js");
 /*
  * Singleton
  */
-const {Database} = require("../managers/Database");
+const {Database} = require("../managers/database");
 
 /*
  * Utils
  */
-const {Logger} = require("../utils/Logger");
-const {Lang} = require("../utils/Lang");
+const {Logger} = require("../utils/logger");
+const {Lang} = require("../utils/lang");
 
 /*
  * Constants
  */
-const {Category} = require("../cons/Category");
+const {Category} = require("../cons/category");
 
 // TODO: category embed settings
 module.exports = {

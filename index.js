@@ -7,10 +7,10 @@ const {REST} = require('@discordjs/rest');
 /*
  * Constants
  */
-const {token} = require('./configExample.json');
+const {token} = require('./config.json');
 
-const {CommandHandler} = require('./handlers/CommandHandler');
-const {EventHandler} = require("./handlers/EventHandler");
+const {CommandHandler} = require('./handlers/command_handler');
+const {EventHandler} = require("./handlers/event_handler");
 
 const rest = new REST({version: '9'}).setToken(token);
 const client = new Client({intents: [Intents.FLAGS.GUILDS]});

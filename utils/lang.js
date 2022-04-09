@@ -6,7 +6,7 @@ const fs = require("node:fs");
 /*
  * Utils
  */
-const {Logger} = require("./Logger");
+const {Logger} = require("./logger");
 
 /*
  * Constants

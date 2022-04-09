@@ -1,4 +1,4 @@
-class BotGuild {
+class Bot_guild {
 
     constructor(guildId, panel, panelButtons, panelChannelId, panelMessageId, ticketCategories, ticketCategoriesJSON, language) {
         this.guildId = guildId;
@@ -13,4 +13,4 @@ class BotGuild {
 
 }
 
-module.exports.BotGuild = BotGuild;
+module.exports.BotGuild = Bot_guild;

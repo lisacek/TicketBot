@@ -8,9 +8,9 @@ const {Routes} = require("discord-api-types/v9");
 /*
  * Utils
  */
-const {Logger} = require("../utils/Logger");
+const {Logger} = require("../utils/logger");
 
-class CommandHandler {
+class Command_handler {
 
     constructor(client, rest) {
         this.client = client;
@@ -38,4 +38,4 @@ class CommandHandler {
     }
 }
 
-module.exports.CommandHandler = CommandHandler;
+module.exports.CommandHandler = Command_handler;

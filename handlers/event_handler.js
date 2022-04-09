@@ -4,11 +4,11 @@
 const fs = require("fs");
 
 /*
- * EventHandler
+ * Event_handler
  */
-const {Logger} = require("../utils/Logger");
+const {Logger} = require("../utils/logger");
 
-class EventHandler {
+class Event_handler {
 
     constructor(client) {
         this.client = client;
@@ -35,4 +35,4 @@ class EventHandler {
     }
 }
 
-module.exports.EventHandler = EventHandler;
+module.exports.EventHandler = Event_handler;

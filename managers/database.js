@@ -1,7 +1,7 @@
 /*
  * Files
  */
-const {sql} = require('../configExample.json');
+const {sql} = require('../config.json');
 
 /*
  * Libraries
@@ -11,13 +11,13 @@ const mysql = require('mysql');
 /*
  * Utils
  */
-const {Logger} = require("../utils/Logger");
+const {Logger} = require("../utils/logger");
 /*
  * Constants
  */
-const {BotGuild} = require("../cons/BotGuild");
-const {Category} = require("../cons/Category");
-const {Ticket} = require("../cons/Ticket");
+const {BotGuild} = require("../cons/bot_guild");
+const {Category} = require("../cons/category");
+const {Ticket} = require("../cons/ticket");
 
 const con = mysql.createConnection({
     host: sql["host"],

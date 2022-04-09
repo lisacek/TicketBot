@@ -6,18 +6,18 @@ const {MessageActionRow, MessageButton} = require("discord.js");
 /*
  * Singleton
  */
-const {Database} = require("../managers/Database");
+const {Database} = require("../managers/database");
 
 /*
  * Utils
  */
-const {Logger} = require("../utils/Logger");
-const {Lang} = require("../utils/Lang");
+const {Logger} = require("../utils/logger");
+const {Lang} = require("../utils/lang");
 
 /*
  * Constants
  */
-const {Ticket} = require("../cons/Ticket");
+const {Ticket} = require("../cons/ticket");
 
 module.exports = {
     name: 'interactionCreate',
