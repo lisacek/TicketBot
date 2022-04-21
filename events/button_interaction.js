@@ -199,7 +199,8 @@ async function createTicket(interaction, botGuild) {
     const can = interaction.channel;
     const cat = botGuild.ticketCategories.get(interaction.customId);
     if (cat === undefined) return;
-    await can.guild.channels.create(`ticket-${interaction.user.username}`, {
+    const ticketId = await Database.getAndIncrementTicketId();
+    await can.guild.channels.create(`ticket-${interaction.user.username}-${ticketId}`, {
         type: 'text',
         parent: cat.categoryId,
         permissionOverwrites: [

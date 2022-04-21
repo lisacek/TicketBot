@@ -30,12 +30,24 @@ const con = mysql.createConnection({
 
 const botGuilds = new Map();
 const tickets = new Map();
+let ticketId = -1;
 
 let initialized = false;
 
 //TODO: Auto cleanup - Auto remove tickets that are older than X days
 // Checker if tickets exists in guilds
 class DatabaseManager {
+
+
+    /**
+     * Initialize the database manager
+     * @returns {Promise<void>}
+     */
+    async init() {
+        await Database.executeUpdate("create table if not exists guild_language (id int auto_increment primary key, guild_id varchar(32) not null, lang varchar(3) default 'en' not null, constraint guild_id unique (guild_id)) charset = utf8mb4;", "");
+        await Database.executeUpdate("create table if not exists guild_panels (id int auto_increment primary key, guild_id varchar(32) default '' not null, panel longtext collate utf8mb4_unicode_ci not null, channel_id varchar(32) null, message_id varchar(32) null, buttons longtext collate utf8mb4_bin default '{\"0\":{\"name\":\"TICKET\",\"id\":\"ticket\",\"color\":\"SECONDARY\",\"emoji\":\"747130842446561310\"}}' not null, categories longtext collate utf8mb4_bin default '{    \"ticket\":{       \"category-id\":null,       \"allowed-roles-id\":[                 ],       \"ping-roles-id\":[                 ],       \"message\":\"Hello, {User}!\",       \"embed\":{          \"title\":\"Panel\",          \"description\":\"Ticket system\",          \"color\":65280       }    } }' not null, constraint guild_id unique (guild_id)) charset = utf8mb4;", "");
+        await Database.executeUpdate("create table if not exists guild_panels (id int auto_increment primary key, guild_id varchar(32) default '' not null, panel longtext collate utf8mb4_unicode_ci not null, channel_id varchar(32) null, message_id varchar(32) null, buttons longtext collate utf8mb4_bin default '{\"0\":{\"name\":\"TICKET\",\"id\":\"ticket\",\"color\":\"SECONDARY\",\"emoji\":\"747130842446561310\"}}' not null, categories longtext collate utf8mb4_bin default '{    \"ticket\":{       \"category-id\":null,       \"allowed-roles-id\":[                 ],       \"ping-roles-id\":[                 ],       \"message\":\"Hello, {User}!\",       \"embed\":{          \"title\":\"Panel\",          \"description\":\"Ticket system\",          \"color\":65280       }    } }' not null, constraint guild_id unique (guild_id)) charset = utf8mb4;", "");
+    }
 
     /**
      * Executes a query and returns the resultSet.
@@ -150,6 +162,24 @@ class DatabaseManager {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Sets local-cached ticketId.
+     * @returns {Promise<void>}
+     */
+    async updateTicketId() {
+        await Database.executeQuery("SELECT LAST_INSERT_ID()", "", function (result) {
+            ticketId = result[0].id + 1;
+        });
+    }
+
+    /**
+     * Gets local-cached ticketId.
+     * @returns {number}
+     */
+    getAndIncrementTicketId() {
+        return ticketId++;
     }
 
     /**
