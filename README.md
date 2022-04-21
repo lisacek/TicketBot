@@ -1,4 +1,4 @@
-#TicketBot
+# TicketBot
 TicketBot is a bot that allows users to create tickets in a ticketing system.<br>
 Version: 1.0.0
 
