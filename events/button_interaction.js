@@ -1,7 +1,8 @@
 /*
  * Libraries
  */
-const {MessageActionRow, MessageButton} = require("discord.js");
+const {MessageActionRow, MessageButton, MessageEmbed} = require("discord.js");
+const discordTranscripts = require('discord-html-transcripts');
 
 /*
  * Singleton
@@ -80,6 +81,20 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
         content: Lang.get("ticket-delete", botGuild.language) + " " + channel.toString(),
         ephemeral: true
     });
+    const transcriptChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
+    const attachment = await discordTranscripts.createTranscript(channel);
+
+    const embedTrans = await new MessageEmbed()
+        .setAuthor(`${guild.name} | ${channel.name}`, guild.iconURL())
+        .setDescription(`(Odkaz)[${attachment.url}]`)
+        .setColor(0x00AE86)
+        .setTimestamp();
+
+    transcriptChannel.send({
+        embeds: [embedTrans]
+    }).then(m => {
+        m.reply({files: [attachment]});
+    });
     setTimeout(() => {
         channel.delete();
         Database.executeUpdate("DELETE FROM tickets WHERE channel_id = ?",
@@ -120,6 +135,14 @@ async function openTicket(interaction, channel, guild, botGuild) {
         SEND_MESSAGES: true
     });
     ticket.status = 0;
+
+    interaction.guild.channels.cache.filter(c => c.id === botGuild.panelChannelId).first().messages.fetch(botGuild.panelMessageId)
+        .then(m => {
+            m.edit({
+                embed: embed,
+                actions: row
+            });
+        });
     await channel.setParent(botGuild.ticketCategories.get(ticket.type).categoryId);
     interaction.reply({embeds: [embed], components: [row], ephemeral: false});
     await Database.executeUpdate("UPDATE tickets SET status = 0, closed_at = 0 WHERE channel_id = ?", [interaction.channel.id]);

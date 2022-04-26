@@ -169,7 +169,7 @@ class DatabaseManager {
      * @returns {Promise<void>}
      */
     async updateTicketId() {
-        await Database.executeQuery("SELECT LAST_INSERT_ID()", "", function (result) {
+        await Database.executeQuery("SELECT * FROM tickets ORDER BY id DESC LIMIT 1", "", function (result) {
             ticketId = result[0].id + 1;
         });
     }
@@ -181,6 +181,7 @@ class DatabaseManager {
     getAndIncrementTicketId() {
         return ticketId++;
     }
+    
 
     /**
      * Gets the local cached ticket object for the ticket.
