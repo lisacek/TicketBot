@@ -17,7 +17,7 @@ class Command_handler {
         this.rest = rest;
     }
 
-     registerCommands() {
+    registerCommands() {
         Logger.log("&7Registering commands...");
         this.client.commands = new Collection();
         const commandFiles = fs.readdirSync('./commands')
@@ -33,7 +33,7 @@ class Command_handler {
 
         this.rest.put(Routes.applicationGuildCommands("623819296275169292",
             "608019373160005644"), {body: commands})
-            .then(() =>  Logger.log('&7Successfully registered commands!'))
+            .then(() => Logger.log('&7Successfully registered commands!'))
             .catch(console.error);
     }
 }

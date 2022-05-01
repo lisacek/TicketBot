@@ -82,18 +82,28 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
         ephemeral: true
     });
     const transcriptChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
+    const logChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
     const attachment = await discordTranscripts.createTranscript(channel);
+    attachment.setName(channel.name + ".html");
+    const member = interaction.guild.members.cache.filter(u => u.id === ticket.userId).first();
+    //TODO: CHECK IF USER IS IN THE GUILD !!!!!!!!!!!!!!!!
 
     const embedTrans = await new MessageEmbed()
-        .setAuthor(`${guild.name} | ${channel.name}`, guild.iconURL())
-        .setDescription(`(Odkaz)[${attachment.url}]`)
+        .setAuthor(`${member.user.tag}`, member.user.avatarURL())
         .setColor(0x00AE86)
         .setTimestamp();
 
     transcriptChannel.send({
         embeds: [embedTrans]
     }).then(m => {
-        m.reply({files: [attachment]});
+        m.reply({files: [attachment]}).then(am => {
+            embedTrans.addField("Ticket Owner", member.user.tag, true)
+            embedTrans.addField("Ticket Name", `${channel.name}`, true);
+            embedTrans.addField("Category", `${ticket.type}`, true);
+            embedTrans.addField("Transcript", `[Link](${am.attachments.first().url})`, true);
+            m.edit({embeds: [embedTrans]});
+            am.delete();
+        });
     });
     setTimeout(() => {
         channel.delete();
@@ -210,7 +220,6 @@ async function claimTicket(interaction, channel, guild, botGuild) {
         description: "On your ticket is now working <@" + interaction.user.id + ">",
         color: 0x00ff00
     }
-    console.log(embed);
     ticket.status = 1;
     interaction.reply({embeds: [embed]});
     await Database.executeUpdate("UPDATE tickets SET status = 1, claimed_by = ? WHERE channel_id = ?", [interaction.user.id, interaction.channel.id]);
@@ -273,9 +282,7 @@ async function createTicket(interaction, botGuild) {
 }
 
 function hasPermission(interaction, ticket, botGuild, ownerBypass) {
-    console.log(ticket.type);
     const cat = botGuild.ticketCategories.get(ticket.type);
-    console.log(botGuild.ticketCategories);
     if (cat === undefined) return false;
     if (cat.allowedRoles.size === 0) return true;
     if (ownerBypass) {

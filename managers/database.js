@@ -18,6 +18,9 @@ const {Logger} = require("../utils/logger");
 const {BotGuild} = require("../cons/bot_guild");
 const {Category} = require("../cons/category");
 const {Ticket} = require("../cons/ticket");
+const {MessageActionRow, MessageButton, MessageEmbed} = require("discord.js");
+const {Lang} = require("../utils/lang");
+const discordTranscripts = require("discord-html-transcripts");
 
 const con = mysql.createConnection({
     host: sql["host"],
@@ -170,7 +173,11 @@ class DatabaseManager {
      */
     async updateTicketId() {
         await Database.executeQuery("SELECT * FROM tickets ORDER BY id DESC LIMIT 1", "", function (result) {
-            ticketId = result[0].id + 1;
+            try {
+                ticketId = result[0].id + 1;
+            } catch (e) {
+                ticketId = 0;
+            }
         });
     }
 
@@ -181,7 +188,7 @@ class DatabaseManager {
     getAndIncrementTicketId() {
         return ticketId++;
     }
-    
+
 
     /**
      * Gets the local cached ticket object for the ticket.
@@ -196,6 +203,105 @@ class DatabaseManager {
         }
     }
 
+    async clearTask(client) {
+        Logger.log("&7Clearing tickets...");
+        let x = 0;
+        tickets.forEach((guildTickets, guildId) => {
+            guildTickets.forEach((ticket, channelId) => {
+                const guild = client.guilds.cache.get(guildId);
+                const channel = guild.channels.cache.get(channelId);
+                if (channel == null) {
+                    Database.executeUpdate("DELETE FROM tickets WHERE channel_id = ?", channelId);
+                    guildTickets.delete(channelId);
+                    x++;
+                }
+            });
+        });
+        tickets.forEach((guildTickets, guildId) => {
+            guildTickets.forEach((ticket, channelId) => {
+                const creationDate = ticket.createdAt;
+                const currentDate = new Date().getTime();
+
+                if(currentDate - creationDate > 432000000) {
+                    const guild = client.guilds.cache.get(guildId);
+                    const channel = guild.channels.cache.get(channelId);
+                    if(channel != null && ticket.status === 2) {
+                        deleteTicket(channel, guild);
+                        x++;
+                    }
+                    if(channel != null && ticket.status === 0) {
+                        closeTicket(channel, guild, botGuilds.get(guildId), ticket.userId);
+                        x++;
+                    }
+                }
+            });
+        });
+        Logger.log("&7Cleared &a" + x + " &7tickets!");
+    }
+
+}
+
+async function closeTicket(channel, guild, botGuild, userId) {
+    const ticket = Database.getCachedTickets(guild).get(channel.id);
+    if (ticket == null) return;
+    const embed = {
+        title: "Ticket closed",
+        description: "Ticket was closed by the staff.",
+        color: 0x00ff00
+    }
+    const row = new MessageActionRow()
+        .addComponents(new MessageButton()
+            .setStyle('SUCCESS')
+            .setLabel('Open')
+            .setCustomId('open')
+            .setEmoji('🔓'))
+        .addComponents(new MessageButton()
+            .setStyle('DANGER')
+            .setLabel('Delete')
+            .setCustomId('delete')
+            .setEmoji('🗑️'));
+    await channel.permissionOverwrites.edit(userId, {
+        VIEW_CHANNEL: true,
+        SEND_MESSAGES: false
+    });
+    ticket.status = 2;
+    await channel.setParent(botGuild.ticketCategories.get(ticket.type).closedCategoryId);
+    channel.send({embeds: [embed], components: [row]});
+    await Database.executeUpdate("UPDATE tickets SET status = 2, created_at = ?, closed_at = ? WHERE channel_id = ?", [new Date().getTime(), new Date().getTime(), channel.id]);
+}
+
+async function deleteTicket(channel, guild) {
+    const ticket = Database.getCachedTickets(guild).get(channel.id);
+    if (ticket == null) return;
+
+    const transcriptChannel = guild.channels.cache.filter(c => c.id === "968479339165384714").first();
+    const attachment = await discordTranscripts.createTranscript(channel);
+
+    const member = guild.members.cache.filter(u => u.id === ticket.userId).first();
+    //TODO: CHECK IF USER IS IN THE GUILD !!!!!!!!!!!!!!!!
+
+    const embedTrans = await new MessageEmbed()
+        .setAuthor(`${member.user.tag}`, member.user.avatarURL())
+        .setColor(0x00AE86)
+        .setTimestamp();
+
+    transcriptChannel.send({
+        embeds: [embedTrans]
+    }).then(m => {
+        m.reply({files: [attachment]}).then(am => {
+            embedTrans.addField("Ticket Owner", member.user.tag, true)
+            embedTrans.addField("Ticket Name", `${channel.name}`, true);
+            embedTrans.addField("Category", `${ticket.type}`, true);
+            embedTrans.addField("Transcript", `[Link](${am.attachments.first().url})`, true);
+            m.edit({embeds: [embedTrans]});
+            am.delete();
+        });
+    });
+    setTimeout(() => {
+        channel.delete();
+        Database.executeUpdate("DELETE FROM tickets WHERE channel_id = ?",
+            [channel.id]);
+    }, 5000);
 }
 
 con.connect(function (err) {
