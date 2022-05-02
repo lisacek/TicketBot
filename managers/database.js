@@ -93,7 +93,7 @@ class DatabaseManager {
      * @returns {Promise<void>}
      */
     async initGuilds(client) {
-        Logger.log("&7Initializing guilds...");
+        Logger.log("Initializing guilds...");
         if (initialized) {
             Logger.log("&4Guilds already initialized!");
             return;
@@ -150,7 +150,7 @@ class DatabaseManager {
 
         });
 
-        Logger.log("&7Guilds initialized!");
+        Logger.log("Guilds initialized!");
         initialized = true;
     }
 
@@ -204,7 +204,7 @@ class DatabaseManager {
     }
 
     async clearTask(client) {
-        Logger.log("&7Clearing tickets...");
+        Logger.log("Clearing tickets...");
         let x = 0;
         tickets.forEach((guildTickets, guildId) => {
             guildTickets.forEach((ticket, channelId) => {
@@ -236,7 +236,7 @@ class DatabaseManager {
                 }
             });
         });
-        Logger.log("&7Cleared &a" + x + " &7tickets!");
+        Logger.log("Cleared &a" + x + " &rtickets!");
     }
 
 }
@@ -305,12 +305,12 @@ async function deleteTicket(channel, guild) {
 }
 
 con.connect(function (err) {
-    Logger.log("&7Connecting to database...");
+    Logger.log("Connecting to database...");
     if (err) {
         Logger.log("&4Error while connecting to database: " + err);
         throw err;
     }
-    Logger.log("&7Connected to database!");
+    Logger.log("Connected to database!");
 });
 
 const Database = new DatabaseManager();

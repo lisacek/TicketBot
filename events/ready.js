@@ -18,6 +18,6 @@ module.exports = {
         setInterval(async function () {
             await Database.clearTask(client)
         }, 1000 * 60);
-        await Logger.log(`Ready! Logged in as &a${client.user.tag}`);
+        await Logger.log(`Ready! Logged in as &d${client.user.tag}`);
     },
 };

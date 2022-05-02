@@ -11,7 +11,7 @@ class Logger {
         if (parseInt(minute) < 10) minute = '0' + minute;
         let second = new Intl.DateTimeFormat('en', {second: 'numeric', hourCycle: 'h23'}).format(d);
         if (parseInt(second) < 10) second = '0' + second;
-        console.log(color(`&7[${hour}:${minute}:${second}] ` + message + '&r'));
+        console.log(color(`&r[${hour}:${minute}:${second}] ` + message + '&r'));
     }
 
 }
@@ -24,6 +24,8 @@ class Logger {
 function color(message) {
     return message.replace("&f", "\u001B[37m")
         .replace(/&7/g, "\u001B[37m")
+        .replace(/&f/g, "\033[0m")
+        .replace(/&r/g, "\033[0m")
         .replace(/&4/g, "\u001B[31m")
         .replace(/&9/g, "\x1b[36m")
         .replace(/&e/g, "\x1b[33m")
@@ -31,6 +33,9 @@ function color(message) {
         .replace(/&a/g, "\u001B[32m")
         .replace(/&2/g, "\u001B[32m")
         .replace(/&r/g, "\x1b[0m")
+        .replace(/&c/g, "\033[91m")
+        .replace(/&b/g, "\033[94m")
+        .replace(/&d/g, "\033[95m")
 }
 
 module.exports.Logger = Logger;

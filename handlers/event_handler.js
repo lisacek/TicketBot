@@ -18,7 +18,7 @@ class Event_handler {
      * Reads all events file and registers them as events.
      */
     registerEvents() {
-        Logger.log("&7Registering events...");
+        Logger.log("Registering events...");
 
         const eventFiles = fs.readdirSync('./events')
             .filter(file => file.endsWith('.js'));
@@ -31,7 +31,7 @@ class Event_handler {
                 this.client.on(event.name, (...args) => event.execute(...args));
             }
         }
-        Logger.log("&7Successfully registered events!");
+        Logger.log("Successfully registered events!");
     }
 }
 
