@@ -7,6 +7,9 @@ Version: 1.0.0
 - [Discord.js](https://discord.js.org/) (v13.x)
 - [MySQL](https://www.mysql.com/) 8+
 
+# Test Server
+- https://discord.gg/3tRKp3T
+
 # Setup
 1. Rename configExample.json to config.json
 2. Fill sql details and bot token
