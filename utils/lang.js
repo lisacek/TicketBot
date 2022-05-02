@@ -27,7 +27,9 @@ class Lang {
             return "null";
         }
         for (let i = 0; i < Object.keys(languages.get(lang)).length; i++) {
-            if (Object.keys(languages.get(lang))[i] === key) return Object.keys(languages.get(lang))[i];
+            if (Object.keys(languages.get(lang))[i] === key) {
+                return languages.get(lang)[key];
+            }
         }
         Logger.log("&4Language Key not found: &7" + key);
         return "null";

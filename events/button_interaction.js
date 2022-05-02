@@ -22,7 +22,6 @@ const {Ticket} = require("../cons/ticket");
 
 module.exports = {
     name: 'interactionCreate',
-    //TODO: Language
     async execute(interaction) {
         if (!interaction.isButton()) return;
 
@@ -72,7 +71,8 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
     if (ticket == null) return;
     if (!hasPermission(interaction, ticket, botGuild, false)) {
         interaction.reply({
-            content: "No permission to delete this ticket.",
+            content: Lang.get("ticket-no-permission-to-delete",
+                botGuild.language),
             ephemeral: true
         });
         return;
@@ -82,7 +82,6 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
         ephemeral: true
     });
     const transcriptChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
-    const logChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
     const attachment = await discordTranscripts.createTranscript(channel);
     attachment.setName(channel.name + ".html");
     const member = interaction.guild.members.cache.filter(u => u.id === ticket.userId).first();
@@ -97,10 +96,15 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
         embeds: [embedTrans]
     }).then(m => {
         m.reply({files: [attachment]}).then(am => {
-            embedTrans.addField("Ticket Owner", member.user.tag, true)
-            embedTrans.addField("Ticket Name", `${channel.name}`, true);
-            embedTrans.addField("Category", `${ticket.type}`, true);
-            embedTrans.addField("Transcript", `[Link](${am.attachments.first().url})`, true);
+            embedTrans.addField(Lang.get("ticket-owner",
+                botGuild.language), member.user.tag, true)
+            embedTrans.addField(Lang.get("ticket-name",
+                botGuild.language), `${channel.name}`, true);
+            embedTrans.addField(Lang.get("ticket-category",
+                botGuild.language), `${ticket.type}`, true);
+            embedTrans.addField(Lang.get("ticket-transcript",
+                botGuild.language), `[` + Lang.get("ticket-transcript-link",
+                botGuild.language) +`](${am.attachments.first().url})`, true);
             m.edit({embeds: [embedTrans]});
             am.delete();
         });
@@ -117,14 +121,16 @@ async function openTicket(interaction, channel, guild, botGuild) {
     if (ticket == null) return;
     if (!hasPermission(interaction, ticket, botGuild, true)) {
         interaction.reply({
-            content: "No permission to open this ticket.",
+            content: Lang.get("ticket-no-permission-to-open",
+                botGuild.language),
             ephemeral: true
         });
         return;
     }
     if (ticket.status !== 2 && ticket.status && "2") {
         await interaction.reply({
-            content: "This ticket is already opened.",
+            content: Lang.get("ticket-already-opened",
+                botGuild.language),
             ephemeral: true
         });
         return;
@@ -137,7 +143,8 @@ async function openTicket(interaction, channel, guild, botGuild) {
     const row = new MessageActionRow()
         .addComponents(new MessageButton()
             .setStyle('PRIMARY')
-            .setLabel('Close')
+            .setLabel(Lang.get("ticket-close-button",
+                botGuild.language))
             .setCustomId('close')
             .setEmoji('🔒'));
     await channel.permissionOverwrites.edit(interaction.user.id, {
@@ -163,13 +170,15 @@ async function closeTicket(interaction, channel, guild, botGuild) {
     if (ticket == null) return;
     if (!hasPermission(interaction, ticket, botGuild, true)) {
         interaction.reply({
-            content: "No permission to close this ticket.",
+            content: Lang.get("ticket-no-permission-to-close",
+                botGuild.language),
             ephemeral: true
         });
         return;
     }
     if (ticket.status !== 1 && ticket.status !== "1" && ticket.status !== 0 && ticket.status && "0") {
-        await interaction.reply({content: "This ticket is already closed.", ephemeral: true});
+        await interaction.reply({content: Lang.get("ticket-already-closed",
+                botGuild.language), ephemeral: true});
         return;
     }
     const embed = {
@@ -180,12 +189,14 @@ async function closeTicket(interaction, channel, guild, botGuild) {
     const row = new MessageActionRow()
         .addComponents(new MessageButton()
             .setStyle('SUCCESS')
-            .setLabel('Open')
+            .setLabel((Lang.get("ticket-open-button",
+                botGuild.language)))
             .setCustomId('open')
             .setEmoji('🔓'))
         .addComponents(new MessageButton()
             .setStyle('DANGER')
-            .setLabel('Delete')
+            .setLabel(Lang.get("ticket-delete-button",
+                botGuild.language))
             .setCustomId('delete')
             .setEmoji('🗑️'));
     await channel.permissionOverwrites.edit(interaction.user.id, {
@@ -203,14 +214,16 @@ async function claimTicket(interaction, channel, guild, botGuild) {
     if (ticket == null) return;
     if (!hasPermission(interaction, ticket, botGuild, false)) {
         interaction.reply({
-            content: "No permission to claim this ticket.",
+            content: Lang.get("ticket-no-permission-to-claim",
+                botGuild.language),
             ephemeral: true
         });
         return;
     }
     if (ticket.status !== 0 && ticket.status !== "0") {
         await interaction.reply({
-            content: "This ticket is already claimed/closed.",
+            content: Lang.get("ticket-already-closed",
+                botGuild.language),
             ephemeral: true
         });
         return;
@@ -251,12 +264,14 @@ async function createTicket(interaction, botGuild) {
         const row = new MessageActionRow()
             .addComponents(new MessageButton()
                 .setStyle('PRIMARY')
-                .setLabel('Close')
+                .setLabel(Lang.get("ticket-close-button",
+                    botGuild.language))
                 .setCustomId('close')
                 .setEmoji('🔒'))
             .addComponents(new MessageButton()
                 .setStyle('SUCCESS')
-                .setLabel('Claim')
+                .setLabel(Lang.get("ticket-claim-button",
+                    botGuild.language))
                 .setCustomId('claim')
                 .setEmoji('👌'));
         newChannel.send({

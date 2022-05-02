@@ -3,5 +3,22 @@
   "ticket-created": "Ticket created!",
   "ticket-creation-category-changed": "Ticket creation category changed!",
   "ticket-delete": "Ticket will be deleted!",
-  "ticket-closed": "Ticket was closed!"
+  "ticket-closed": "Ticket was closed!",
+  "ticket-owner": "Ticket Owner",
+  "ticket-name": "Ticket Name",
+  "ticket-category": "Category",
+  "ticket-transcript": "Ticket Transcript",
+  "ticket-transcript-link": "Link",
+  "ticket-open-button": "Open",
+  "ticket-close-button": "Close",
+  "ticket-delete-button": "Delete",
+  "ticket-claim-button": "Claim",
+  "ticket-no-permission-to-close": "You do not have permission to close this ticket.",
+  "ticket-no-permission-to-delete": "You do not have permission to delete this ticket.",
+  "ticket-no-permission-to-open": "You do not have permission to open this ticket.",
+  "ticket-no-permission-to-claim": "You do not have permission to claim this ticket.",
+  "ticket-already-closed": "This ticket is already closed.",
+  "ticket-already-claimed": "This ticket is already claimed.",
+  "ticket-already-opened": "This ticket is already opened.",
+  "ticket-reopen": "Ticket reopened!"
 }
