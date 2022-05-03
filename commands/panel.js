@@ -42,6 +42,16 @@ module.exports = {
                         .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('language')
+                .setDescription('Language of the panel.')
+                .addStringOption(option =>
+                    option.setName('lang')
+                        .setDescription('Choose language.')
+                        .setRequired(true)
+                        .addChoice('Čeština', 'cs')
+                        .addChoice('English', 'en')))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('closed-category')
                 .setDescription('Ticket closed category settings')
                 .addStringOption(option =>
@@ -196,9 +206,23 @@ module.exports = {
             case 'send' :
                 await sendPanel(interaction, botGuild);
                 break;
+            case "language":
+                await updateLanguage(interaction, botGuild);
+                break;
         }
     },
 };
+
+async function updateLanguage(interaction, botGuild) {
+    const language = interaction.options._hoistedOptions[0].value;
+    const guild = interaction.guild;
+    botGuild.language = language;
+    interaction.reply({
+        content: Lang.get("panel-lang-changed", botGuild.language),
+        ephemeral: true
+    });
+    await Database.executeUpdate("UPDATE guild_language SET lang = ? WHERE guild_id = ?", [language, guild.id]);
+}
 
 async function updateCloseCategoryId(interaction, botGuild) {
     const categories = JSON.parse(botGuild.ticketCategoriesJSON);
@@ -283,7 +307,7 @@ async function updateCategory(interaction, botGuild) {
     let cache;
     switch (property) {
         case "title":
-            if(value.length > 256) {
+            if (value.length > 256) {
                 interaction.reply({
                     content: Lang.get("ticket-creation-category-title-too-long", botGuild.language),
                     ephemeral: true
@@ -315,7 +339,7 @@ async function updateCategory(interaction, botGuild) {
         case
         "description"
         :
-            if(value.length > 2048) {
+            if (value.length > 2048) {
                 interaction.reply({
                     content: Lang.get("panel-description-too-long", botGuild.language),
                     ephemeral: true
@@ -323,7 +347,7 @@ async function updateCategory(interaction, botGuild) {
                 return;
             }
 
-            if(value.length === 0) {
+            if (value.length === 0) {
                 interaction.reply({
                     content: Lang.get("panel-description-empty", botGuild.language),
                     ephemeral: true
@@ -374,7 +398,7 @@ async function updateCategory(interaction, botGuild) {
         case
         "footer-text"
         :
-            if(value.length > 1024) {
+            if (value.length > 1024) {
                 interaction.reply({
                     content: Lang.get("panel-footer-text-too-long", botGuild.language),
                     ephemeral: true
@@ -413,7 +437,7 @@ async function updatePanel(interaction, botGuild) {
     let panel;
     switch (property) {
         case "title":
-            if(value.length > 256) {
+            if (value.length > 256) {
                 interaction.reply({
                     content: Lang.get("panel-title-too-long", botGuild.language),
                     ephemeral: true
@@ -434,14 +458,14 @@ async function updatePanel(interaction, botGuild) {
             await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
             break;
         case "description":
-            if(value.length > 2048) {
+            if (value.length > 2048) {
                 interaction.reply({
                     content: Lang.get("panel-description-too-long", botGuild.language),
                     ephemeral: true
                 });
                 return;
             }
-            if(value.length < 1) {
+            if (value.length < 1) {
                 interaction.reply({
                     content: Lang.get("panel-description-too-short", botGuild.language),
                     ephemeral: true
@@ -474,7 +498,7 @@ async function updatePanel(interaction, botGuild) {
             break;
         case "footer-text":
             panel = JSON.parse(botGuild.panel);
-            if(value.length > 1024) return interaction.reply({
+            if (value.length > 1024) return interaction.reply({
                 content: Lang.get("panel-footer-text-too-long", botGuild.language),
                 ephemeral: true
             });
@@ -513,7 +537,7 @@ async function categoryAdd(interaction, botGuild) {
     const emoji = interaction.options._hoistedOptions[1].value;
     const creationId = interaction.options._hoistedOptions[2].value;
     //validate creationId channel id
-    if(!interaction.guild.channels.has(creationId)) {
+    if (!interaction.guild.channels.has(creationId)) {
         interaction.reply({
             content: Lang.get("panel-category-invalid-channel", botGuild.language),
             ephemeral: true
@@ -522,7 +546,7 @@ async function categoryAdd(interaction, botGuild) {
     }
     const closedId = interaction.options._hoistedOptions[3].value;
     //validate closedId channel id
-    if(!interaction.guild.channels.has(closedId)) {
+    if (!interaction.guild.channels.has(closedId)) {
         interaction.reply({
             content: Lang.get("panel-category-invalid-channel", botGuild.language),
             ephemeral: true
@@ -531,7 +555,7 @@ async function categoryAdd(interaction, botGuild) {
     }
     const allowedRole = interaction.options._hoistedOptions[4].value;
     //validate allowedRole role id
-    if(!interaction.guild.roles.has(allowedRole)) {
+    if (!interaction.guild.roles.has(allowedRole)) {
         interaction.reply({
             content: Lang.get("panel-category-invalid-role", botGuild.language),
             ephemeral: true
@@ -541,7 +565,7 @@ async function categoryAdd(interaction, botGuild) {
     const pingRole = interaction.options._hoistedOptions[5].value;
 
     //validate pingRole role id
-    if(!interaction.guild.roles.has(pingRole)) {
+    if (!interaction.guild.roles.has(pingRole)) {
         interaction.reply({
             content: Lang.get("panel-category-invalid-role", botGuild.language),
             ephemeral: true

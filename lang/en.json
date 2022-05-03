@@ -20,5 +20,17 @@
   "ticket-already-closed": "This ticket is already closed.",
   "ticket-already-claimed": "This ticket is already claimed.",
   "ticket-already-opened": "This ticket is already opened.",
-  "ticket-reopen": "Ticket reopened!"
+  "ticket-reopen": "Ticket reopened!",
+  "ticket-close-category-invalid-channel": "The channel id you've entered is invalid!",
+  "ticket-creation-category-invalid-channel": "The channel id you've entered is invalid!",
+  "ticket-creation-category-title-too-long": "The title you've entered is too long!",
+  "panel-description-too-long": "The description you've entered is too long!",
+  "panel-description-empty": "The description you've entered is empty!",
+  "panel-description-too-short": "The description you've entered is too short!",
+  "panel-color-invalid": "The color you've entered is invalid!",
+  "panel-footer-text-too-long": "The footer text you've entered is too long!",
+  "panel-category-invalid-channel": "The channel id you've entered is invalid!",
+  "panel-category-invalid-role": "The role id you've entered is invalid!",
+  "panel-button-color-invalid": "The button color you've entered is invalid!",
+  "panel-lang-changed": "Language changed! (\uD83C\uDDEC\uD83C\uDDE7 English)"
 }

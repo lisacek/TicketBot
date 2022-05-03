@@ -20,5 +20,17 @@
   "ticket-already-closed": "Tiket je již uzavřen!",
   "ticket-already-claimed": "Tiket je již převzat!",
   "ticket-already-opened": "Tiket je již otevřen!",
-  "ticket-reopen": "Tiket byl znovu otevřen!"
+  "ticket-reopen": "Tiket byl znovu otevřen!",
+  "ticket-close-category-invalid-channel": "Kategorie s tímto id nebyla nalezena!",
+  "ticket-creation-category-invalid-channel": "Kategorie s tímto id nebyla nalezena!",
+  "ticket-creation-category-title-too-long": "Název kategorie je příliš dlouhý!",
+  "panel-description-too-long": "Popis panelu je příliš dlouhý!",
+  "panel-description-empty": "Popis panelu je prázdný!",
+  "panel-description-too-short": "Popis panelu je příliš krátký!",
+  "panel-color-invalid": "Barva panelu je neplatná!",
+  "panel-footer-text-too-long": "Text patičky je příliš dlouhý!",
+  "panel-category-invalid-channel": "Kategorie s tímto id nebyla nalezena!",
+  "panel-category-invalid-role": "Role s tímto id nebyla nalezena!",
+  "panel-button-color-invalid": "Barva tlačítka je neplatná!",
+  "panel-lang-changed": "Jazyk panelu změněn! (\uD83C\uDDE8\uD83C\uDDFF Čeština)"
 }
