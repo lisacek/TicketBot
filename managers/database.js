@@ -294,7 +294,6 @@ async function deleteTicket(channel, guild) {
             embedTrans.addField("Category", `${ticket.type}`, true);
             embedTrans.addField("Transcript", `[Link](${am.attachments.first().url})`, true);
             m.edit({embeds: [embedTrans]});
-            am.delete();
         });
     });
     setTimeout(() => {

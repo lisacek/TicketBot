@@ -106,7 +106,6 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
                 botGuild.language), `[` + Lang.get("ticket-transcript-link",
                 botGuild.language) +`](${am.attachments.first().url})`, true);
             m.edit({embeds: [embedTrans]});
-            am.delete();
         });
     });
     setTimeout(() => {

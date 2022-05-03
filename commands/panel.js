@@ -207,6 +207,16 @@ async function updateCloseCategoryId(interaction, botGuild) {
     const lang = botGuild.language;
     categories[name].closed_category_id = id;
 
+    //validate channel id
+    const channel = interaction.guild.channels.cache.get(id);
+    if (!channel) {
+        interaction.reply({
+            content: Lang.get("ticket-close-category-invalid-channel", lang),
+            ephemeral: true
+        });
+        return;
+    }
+
     interaction.reply({
         content: Lang.get("ticket-creation-category-changed", lang),
         ephemeral: true
@@ -233,6 +243,16 @@ async function updateTicketCategoryId(interaction, botGuild) {
     const name = interaction.options._hoistedOptions[0].value;
     const id = interaction.options._hoistedOptions[1].value;
     const lang = botGuild.language;
+
+    const channel = interaction.guild.channels.cache.get(id);
+    if (!channel) {
+        interaction.reply({
+            content: Lang.get("ticket-creation-category-invalid-channel", lang),
+            ephemeral: true
+        });
+        return;
+    }
+
     categories[name].category_id = id;
     interaction.reply({
         content: Lang.get("ticket-creation-category-changed", lang),
@@ -263,8 +283,15 @@ async function updateCategory(interaction, botGuild) {
     let cache;
     switch (property) {
         case "title":
+            if(value.length > 256) {
+                interaction.reply({
+                    content: Lang.get("ticket-creation-category-title-too-long", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
             panel = botGuild.ticketCategories.get(category).embed;
-            if (value === "delete" || value === "remove" || value === "null") {
+            if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.title;
             } else {
                 panel.title = value;
@@ -288,6 +315,22 @@ async function updateCategory(interaction, botGuild) {
         case
         "description"
         :
+            if(value.length > 2048) {
+                interaction.reply({
+                    content: Lang.get("panel-description-too-long", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
+
+            if(value.length === 0) {
+                interaction.reply({
+                    content: Lang.get("panel-description-empty", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
+
             panel = botGuild.ticketCategories.get(category).embed;
             panel.description = value.split("[enter]");
             try {
@@ -307,6 +350,11 @@ async function updateCategory(interaction, botGuild) {
         case
         "color"
         :
+            const reg = /^#([0-9a-f]{3}){1,2}$/i;
+            if (!reg.test('' + value)) return interaction.reply({
+                content: Lang.get("panel-color-invalid", botGuild.language),
+                ephemeral: true
+            });
             panel = botGuild.ticketCategories.get(category).embed;
             panel.color = value;
             try {
@@ -326,8 +374,15 @@ async function updateCategory(interaction, botGuild) {
         case
         "footer-text"
         :
+            if(value.length > 1024) {
+                interaction.reply({
+                    content: Lang.get("panel-footer-text-too-long", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
             panel = botGuild.ticketCategories.get(category).embed;
-            if (value === "delete" || value === "remove" || value === "null") {
+            if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.footer;
             } else if (panel.footer == null) {
                 panel.footer = {};
@@ -358,8 +413,15 @@ async function updatePanel(interaction, botGuild) {
     let panel;
     switch (property) {
         case "title":
+            if(value.length > 256) {
+                interaction.reply({
+                    content: Lang.get("panel-title-too-long", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
             panel = JSON.parse(botGuild.panel);
-            if (value === "delete" || value === "remove" || value === "null") {
+            if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.title;
             } else {
                 panel.title = value;
@@ -372,6 +434,20 @@ async function updatePanel(interaction, botGuild) {
             await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
             break;
         case "description":
+            if(value.length > 2048) {
+                interaction.reply({
+                    content: Lang.get("panel-description-too-long", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
+            if(value.length < 1) {
+                interaction.reply({
+                    content: Lang.get("panel-description-too-short", botGuild.language),
+                    ephemeral: true
+                });
+                return;
+            }
             panel = JSON.parse(botGuild.panel);
             panel.description = value.split("[enter]");
             botGuild.panel = JSON.stringify(panel);
@@ -382,6 +458,11 @@ async function updatePanel(interaction, botGuild) {
             await Database.executeUpdate("UPDATE guild_panels SET panel = ? WHERE guild_id = ?", [botGuild.panel, interaction.guild.id]);
             break;
         case "color":
+            const reg = /^#([0-9a-f]{3}){1,2}$/i;
+            if (!reg.test('' + value)) return interaction.reply({
+                content: Lang.get("panel-color-invalid", botGuild.language),
+                ephemeral: true
+            });
             panel = JSON.parse(botGuild.panel);
             panel.color = value;
             botGuild.panel = JSON.stringify(panel);
@@ -393,7 +474,11 @@ async function updatePanel(interaction, botGuild) {
             break;
         case "footer-text":
             panel = JSON.parse(botGuild.panel);
-            if (value === "delete" || value === "remove" || value === "null") {
+            if(value.length > 1024) return interaction.reply({
+                content: Lang.get("panel-footer-text-too-long", botGuild.language),
+                ephemeral: true
+            });
+            if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.footer;
             } else if (panel.footer == null) {
                 panel.footer = {};
@@ -427,15 +512,69 @@ async function categoryAdd(interaction, botGuild) {
     const catName = interaction.options._hoistedOptions[0].value;
     const emoji = interaction.options._hoistedOptions[1].value;
     const creationId = interaction.options._hoistedOptions[2].value;
+    //validate creationId channel id
+    if(!interaction.guild.channels.has(creationId)) {
+        interaction.reply({
+            content: Lang.get("panel-category-invalid-channel", botGuild.language),
+            ephemeral: true
+        });
+        return;
+    }
     const closedId = interaction.options._hoistedOptions[3].value;
+    //validate closedId channel id
+    if(!interaction.guild.channels.has(closedId)) {
+        interaction.reply({
+            content: Lang.get("panel-category-invalid-channel", botGuild.language),
+            ephemeral: true
+        });
+        return;
+    }
     const allowedRole = interaction.options._hoistedOptions[4].value;
+    //validate allowedRole role id
+    if(!interaction.guild.roles.has(allowedRole)) {
+        interaction.reply({
+            content: Lang.get("panel-category-invalid-role", botGuild.language),
+            ephemeral: true
+        });
+        return;
+    }
     const pingRole = interaction.options._hoistedOptions[5].value;
+
+    //validate pingRole role id
+    if(!interaction.guild.roles.has(pingRole)) {
+        interaction.reply({
+            content: Lang.get("panel-category-invalid-role", botGuild.language),
+            ephemeral: true
+        });
+        return;
+    }
     const message = interaction.options._hoistedOptions[6].value;
     const title = interaction.options._hoistedOptions[7].value;
     const description = interaction.options._hoistedOptions[8].value;
     const color = interaction.options._hoistedOptions[9].value;
+
+    //validate color
+    const reg = /^#([0-9a-f]{3}){1,2}$/i;
+    if (!reg.test('' + color)) return interaction.reply({
+        content: Lang.get("panel-color-invalid", botGuild.language),
+        ephemeral: true
+    });
     const buttonText = interaction.options._hoistedOptions[10].value;
     const buttonColor = interaction.options._hoistedOptions[11].value;
+
+    //validate buttonColor
+    switch (buttonColor.toUpperCase()) {
+        case "PRIMARY":
+        case "SECONDARY":
+        case "SUCCESS":
+        case "DANGER":
+            break;
+        default:
+            return interaction.reply({
+                content: Lang.get("panel-button-color-invalid", botGuild.language),
+                ephemeral: true
+            });
+    }
 
     const categories = JSON.parse(botGuild.ticketCategoriesJSON);
     categories[catName] = {};
