@@ -37,10 +37,7 @@ let ticketId = -1;
 
 let initialized = false;
 
-//TODO: Auto cleanup - Auto remove tickets that are older than X days
-// Checker if tickets exists in guilds
 class DatabaseManager {
-
 
     /**
      * Initialize the database manager

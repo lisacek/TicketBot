@@ -170,8 +170,7 @@ module.exports = {
                 .setName('send')
                 .setDescription('Sends and setups panel.')),
 
-    //TODO: Complete setup and Settings
-    // create more functions for panel
+    //TODO: create more functions for panel
     async execute(interaction) {
         const botGuild = await Database.getCachedGuild(interaction.guild);
         //Check if the guild is cached.
@@ -299,12 +298,13 @@ async function updateTicketCategoryId(interaction, botGuild) {
 }
 
 async function updateCategory(interaction, botGuild) {
-    const category = interaction.options._hoistedOptions[0].value;
+    const category = interaction.options._hoistedOptions[0].value.toLowerCase();
     const property = interaction.options._hoistedOptions[1].value;
     const value = interaction.options._hoistedOptions[2].value;
 
     let panel;
     let cache;
+
     switch (property) {
         case "title":
             if (value.length > 256) {
@@ -379,6 +379,7 @@ async function updateCategory(interaction, botGuild) {
                 content: Lang.get("panel-color-invalid", botGuild.language),
                 ephemeral: true
             });
+            Logger.log("zde12");
             panel = botGuild.ticketCategories.get(category).embed;
             panel.color = value;
             try {
@@ -405,6 +406,7 @@ async function updateCategory(interaction, botGuild) {
                 });
                 return;
             }
+            Logger.log("zde");
             panel = botGuild.ticketCategories.get(category).embed;
             if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.footer;

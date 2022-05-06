@@ -259,6 +259,7 @@ async function createTicket(interaction, botGuild) {
         ],
     }).then((newChannel) => {
         //TODO: Custom message
+        cat.embed.description = cat.embed.description.join("\n");
         newChannel.send("<@&663862992265543690>");
         const row = new MessageActionRow()
             .addComponents(new MessageButton()

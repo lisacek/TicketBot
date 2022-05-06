@@ -13,7 +13,7 @@
   "ticket-close-button": "Zavřít",
   "ticket-delete-button": "Smazat",
   "ticket-claim-button": "Převzít",
-    "ticket-no-permission-to-close": "Nemáš oprávnění k uzavření tiketu!",
+  "ticket-no-permission-to-close": "Nemáš oprávnění k uzavření tiketu!",
   "ticket-no-permission-to-delete": "Nemáš oprávnění k smazání tiketu!",
   "ticket-no-permission-to-open": "Nemáš oprávnění k otevření tiketu!",
   "ticket-no-permission-to-claim": "Nemáš oprávnění k převzetí tiketu!",
@@ -32,5 +32,9 @@
   "panel-category-invalid-channel": "Kategorie s tímto id nebyla nalezena!",
   "panel-category-invalid-role": "Role s tímto id nebyla nalezena!",
   "panel-button-color-invalid": "Barva tlačítka je neplatná!",
+  "panel-color-changed": "Barva panelu byla změněna!",
+  "panel-footer-text-changed": "Text patičky byl změněn!",
+  "panel-title-changed": "Název panelu byl změněn!",
+  "panel-description-changed": "Popis panelu byl změněn!",
   "panel-lang-changed": "Jazyk panelu změněn! (\uD83C\uDDE8\uD83C\uDDFF Čeština)"
 }

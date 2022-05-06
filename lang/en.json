@@ -32,5 +32,9 @@
   "panel-category-invalid-channel": "The channel id you've entered is invalid!",
   "panel-category-invalid-role": "The role id you've entered is invalid!",
   "panel-button-color-invalid": "The button color you've entered is invalid!",
+  "panel-color-changed": "Panel color changed!",
+  "panel-footer-text-changed": "Panel footer text changed!",
+  "panel-title-changed": "Panel title changed!",
+  "panel-description-changed": "Panel description changed!",
   "panel-lang-changed": "Language changed! (\uD83C\uDDEC\uD83C\uDDE7 English)"
 }
