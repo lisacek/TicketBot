@@ -1,4 +1,9 @@
 {
+  "ticket": "Tiket",
+  "ticket-support": "Tiket - V řešení",
+  "ticket-support-claim": "Na tvém tiketu pracuje: %user%",
+  "ticket-closed-title": "Tiket - Uzavřen",
+  "ticket-reopen-title": "Tiket - Znovuotevřen",
   "panel-created": "Panel vytvořen!",
   "ticket-created": "Tiket vytvořen!",
   "ticket-creation-category-changed": "Kategorie pro nové tikcety změněna!",

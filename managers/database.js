@@ -244,7 +244,7 @@ async function closeTicket(channel, guild, botGuild, userId) {
     const embed = {
         title: "Ticket closed",
         description: "Ticket was closed by the staff.",
-        color: 0x00ff00
+        color: 0x1ff270
     }
     const row = new MessageActionRow()
         .addComponents(new MessageButton()

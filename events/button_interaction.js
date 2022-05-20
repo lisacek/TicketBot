@@ -85,10 +85,9 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
     const attachment = await discordTranscripts.createTranscript(channel);
     attachment.setName(channel.name + ".html");
     const member = interaction.guild.members.cache.filter(u => u.id === ticket.userId).first();
-    //TODO: CHECK IF USER IS IN THE GUILD !!!!!!!!!!!!!!!!
 
     const embedTrans = await new MessageEmbed()
-        .setAuthor(`${member.user.tag}`, member.user.avatarURL())
+        .setAuthor("" + member.user.tag, "" + member.user.avatarURL())
         .setColor(0x00AE86)
         .setTimestamp();
 
@@ -97,14 +96,14 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
     }).then(m => {
         m.reply({files: [attachment]}).then(am => {
             embedTrans.addField(Lang.get("ticket-owner",
-                botGuild.language), member.user.tag, true)
+                botGuild.language), "" + member.user.tag, true)
             embedTrans.addField(Lang.get("ticket-name",
                 botGuild.language), `${channel.name}`, true);
             embedTrans.addField(Lang.get("ticket-category",
                 botGuild.language), `${ticket.type}`, true);
             embedTrans.addField(Lang.get("ticket-transcript",
                 botGuild.language), `[` + Lang.get("ticket-transcript-link",
-                botGuild.language) +`](${am.attachments.first().url})`, true);
+                botGuild.language) + `](${am.attachments.first().url})`, true);
             m.edit({embeds: [embedTrans]});
         });
     });
@@ -135,9 +134,9 @@ async function openTicket(interaction, channel, guild, botGuild) {
         return;
     }
     const embed = {
-        title: "Ticket",
-        description: "Ticket was re-opened.",
-        color: 0x00ff00
+        title: Lang.get("ticket-reopen-title", botGuild.language),
+        description: Lang.get("ticket-reopen", botGuild.language),
+        color: 0x1ff270
     }
     const row = new MessageActionRow()
         .addComponents(new MessageButton()
@@ -176,14 +175,16 @@ async function closeTicket(interaction, channel, guild, botGuild) {
         return;
     }
     if (ticket.status !== 1 && ticket.status !== "1" && ticket.status !== 0 && ticket.status && "0") {
-        await interaction.reply({content: Lang.get("ticket-already-closed",
-                botGuild.language), ephemeral: true});
+        await interaction.reply({
+            content: Lang.get("ticket-already-closed",
+                botGuild.language), ephemeral: true
+        });
         return;
     }
     const embed = {
-        title: "Ticket closed",
-        description: "Ticket was closed by the staff.",
-        color: 0x00ff00
+        title: Lang.get("ticket-closed-title", botGuild.language),
+        description: Lang.get("ticket-closed", botGuild.language),
+        color: 0xfa3434
     }
     const row = new MessageActionRow()
         .addComponents(new MessageButton()
@@ -228,9 +229,10 @@ async function claimTicket(interaction, channel, guild, botGuild) {
         return;
     }
     const embed = {
-        title: "Support",
-        description: "On your ticket is now working <@" + interaction.user.id + ">",
-        color: 0x00ff00
+        title: Lang.get("ticket-support", botGuild.language),
+        description: Lang.get("ticket-support-claim", botGuild.language)
+            .replace("%user%", "<@" + interaction.user.id + ">"),
+        color: 0x05abf2
     }
     ticket.status = 1;
     interaction.reply({embeds: [embed]});
@@ -259,7 +261,11 @@ async function createTicket(interaction, botGuild) {
         ],
     }).then((newChannel) => {
         //TODO: Custom message
-        cat.embed.description = cat.embed.description.join("\n");
+
+        //check if description is array
+        try {
+            cat.embed.description = cat.embed.description.join("\n");
+        } catch (e) {}
         newChannel.send("<@&663862992265543690>");
         const row = new MessageActionRow()
             .addComponents(new MessageButton()

@@ -1,4 +1,8 @@
 {
+  "ticket": "Ticket",
+  "ticket-support": "Ticket - Staff",
+  "ticket-support-claim": "On your ticket is now working %user%",
+  "ticket-closed-title": "Ticket - Closed",
   "panel-created": "Panel created!",
   "ticket-created": "Ticket created!",
   "ticket-creation-category-changed": "Ticket creation category changed!",
