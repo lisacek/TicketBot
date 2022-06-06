@@ -429,7 +429,7 @@ async function updateCategory(interaction, botGuild) {
     }
 }
 
-async function updatePaneel(interaction, botGuild) {
+async function updatePanel(interaction, botGuild) {
     const property = interaction.options._hoistedOptions[0].value;
     const value = interaction.options._hoistedOptions[1].value;
     let panel;
