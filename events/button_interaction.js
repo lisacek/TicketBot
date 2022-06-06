@@ -84,31 +84,33 @@ async function deleteTicket(interaction, channel, guild, botGuild) {
     const transcriptChannel = interaction.guild.channels.cache.filter(c => c.id === "968479339165384714").first();
     const attachment = await discordTranscripts.createTranscript(channel);
     attachment.setName(channel.name + ".html");
-    const member = interaction.guild.members.cache.filter(u => u.id === ticket.userId).first();
+    const member = interaction.guild.members.cache.filter(u => u.user.id === ticket.userId).first();
+    if (member != null) {
+        const embedTrans = await new MessageEmbed()
+            .setAuthor("" + member.user.tag, "" + member.user.avatarURL())
+            .setColor(0x00AE86)
+            .setTimestamp();
 
-    const embedTrans = await new MessageEmbed()
-        .setAuthor("" + member.user.tag, "" + member.user.avatarURL())
-        .setColor(0x00AE86)
-        .setTimestamp();
-
-    transcriptChannel.send({
-        embeds: [embedTrans]
-    }).then(m => {
-        m.reply({files: [attachment]}).then(am => {
-            embedTrans.addField(Lang.get("ticket-owner",
-                botGuild.language), "" + member.user.tag, true)
-            embedTrans.addField(Lang.get("ticket-name",
-                botGuild.language), `${channel.name}`, true);
-            embedTrans.addField(Lang.get("ticket-category",
-                botGuild.language), `${ticket.type}`, true);
-            embedTrans.addField(Lang.get("ticket-transcript",
-                botGuild.language), `[` + Lang.get("ticket-transcript-link",
-                botGuild.language) + `](${am.attachments.first().url})`, true);
-            m.edit({embeds: [embedTrans]});
+        transcriptChannel.send({
+            embeds: [embedTrans]
+        }).then(m => {
+            m.reply({files: [attachment]}).then(am => {
+                embedTrans.addField(Lang.get("ticket-owner",
+                    botGuild.language), "" + member.user.tag, true)
+                embedTrans.addField(Lang.get("ticket-name",
+                    botGuild.language), `${channel.name}`, true);
+                embedTrans.addField(Lang.get("ticket-category",
+                    botGuild.language), `${ticket.type}`, true);
+                embedTrans.addField(Lang.get("ticket-transcript",
+                    botGuild.language), `[` + Lang.get("ticket-transcript-link",
+                    botGuild.language) + `](${am.attachments.first().url})`, true);
+                m.edit({embeds: [embedTrans]});
+            });
         });
-    });
+    }
     setTimeout(() => {
         channel.delete();
+        Database.getCachedTickets(guild).delete(channel.id);
         Database.executeUpdate("DELETE FROM tickets WHERE channel_id = ?",
             [interaction.channel.id]);
     }, 5000);
@@ -145,12 +147,8 @@ async function openTicket(interaction, channel, guild, botGuild) {
                 botGuild.language))
             .setCustomId('close')
             .setEmoji('🔒'));
-    await channel.permissionOverwrites.edit(interaction.user.id, {
-        VIEW_CHANNEL: true,
-        SEND_MESSAGES: true
-    });
-    ticket.status = 0;
 
+    ticket.status = 0;
     interaction.guild.channels.cache.filter(c => c.id === botGuild.panelChannelId).first().messages.fetch(botGuild.panelMessageId)
         .then(m => {
             m.edit({
@@ -159,6 +157,7 @@ async function openTicket(interaction, channel, guild, botGuild) {
             });
         });
     await channel.setParent(botGuild.ticketCategories.get(ticket.type).categoryId);
+    await channel.permissionOverwrites.edit(ticket.userId, {VIEW_CHANNEL: true, SEND_MESSAGES: true});
     interaction.reply({embeds: [embed], components: [row], ephemeral: false});
     await Database.executeUpdate("UPDATE tickets SET status = 0, closed_at = 0 WHERE channel_id = ?", [interaction.channel.id]);
 }
@@ -199,12 +198,9 @@ async function closeTicket(interaction, channel, guild, botGuild) {
                 botGuild.language))
             .setCustomId('delete')
             .setEmoji('🗑️'));
-    await channel.permissionOverwrites.edit(interaction.user.id, {
-        VIEW_CHANNEL: true,
-        SEND_MESSAGES: false
-    });
     ticket.status = 2;
     await channel.setParent(botGuild.ticketCategories.get(ticket.type).closedCategoryId);
+    await channel.permissionOverwrites.edit(ticket.userId, {VIEW_CHANNEL: true, SEND_MESSAGES: false});
     interaction.reply({embeds: [embed], components: [row]});
     await Database.executeUpdate("UPDATE tickets SET status = 2, closed_at = ? WHERE channel_id = ?", [new Date().getTime(), interaction.channel.id]);
 }
@@ -245,28 +241,44 @@ async function createTicket(interaction, botGuild) {
     const can = interaction.channel;
     const cat = botGuild.ticketCategories.get(interaction.customId);
     if (cat === undefined) return;
-    const ticketId = await Database.getAndIncrementTicketId();
+
+    if (Array.from(Database.getCachedTickets(interaction.guild).values()).filter((ticket) => {
+        return ticket.userId === interaction.user.id && ticket.type === interaction.customId;
+    }).length > 0) {
+        interaction.reply({
+            content: Lang.get("ticket-already-opened",
+                botGuild.language),
+            ephemeral: true
+        });
+        return;
+    }
+
+    const ticketId = Database.getAndIncrementTicketId();
     await can.guild.channels.create(`ticket-${interaction.user.username}-${ticketId}`, {
         type: 'text',
         parent: cat.categoryId,
         permissionOverwrites: [
             {
                 id: channel.guild.id,
-                deny: ['VIEW_CHANNEL'],
+                deny: ['VIEW_CHANNEL', 'SEND_MESSAGES']
             },
             {
                 id: interaction.user.id,
-                allow: ['VIEW_CHANNEL'],
-            },
+                allow: ['VIEW_CHANNEL', 'SEND_MESSAGES']
+            }
         ],
     }).then((newChannel) => {
         //TODO: Custom message
-
         //check if description is array
         try {
             cat.embed.description = cat.embed.description.join("\n");
-        } catch (e) {}
-        newChannel.send("<@&663862992265543690>");
+        } catch (e) {
+        }
+        let roles = "";
+        cat.pingRoles.forEach(role => {
+            roles += "<@&" + role + "> ";
+        })
+        newChannel.send(roles);
         const row = new MessageActionRow()
             .addComponents(new MessageButton()
                 .setStyle('PRIMARY')

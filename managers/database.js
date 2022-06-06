@@ -22,7 +22,8 @@ const {MessageActionRow, MessageButton, MessageEmbed} = require("discord.js");
 const {Lang} = require("../utils/lang");
 const discordTranscripts = require("discord-html-transcripts");
 
-const con = mysql.createConnection({
+const con = mysql.createPool({
+    connectionLimit: 10,
     host: sql["host"],
     user: sql["user"],
     password: sql["password"],
@@ -128,6 +129,7 @@ class DatabaseManager {
                 botGuilds.set(guild.id, botGuild);
                 Database.executeQuery("SELECT * FROM `tickets` WHERE guild_id = ?", guild.id, function (result) {
                     for (let i = 0; i < result.length; i++) {
+                        console.log(result[i].user_id);
                         const ticket = new Ticket(result[i].id,
                             result[i].guild_id,
                             result[i].user_id,
@@ -219,14 +221,14 @@ class DatabaseManager {
                 const creationDate = ticket.createdAt;
                 const currentDate = new Date().getTime();
 
-                if(currentDate - creationDate > 432000000) {
+                if (currentDate - creationDate > 432000000) {
                     const guild = client.guilds.cache.get(guildId);
                     const channel = guild.channels.cache.get(channelId);
-                    if(channel != null && ticket.status === 2) {
+                    if (channel != null && ticket.status === 2) {
                         deleteTicket(channel, guild);
                         x++;
                     }
-                    if(channel != null && ticket.status === 0) {
+                    if (channel != null && ticket.status === 0) {
                         closeTicket(channel, guild, botGuilds.get(guildId), ticket.userId);
                         x++;
                     }
@@ -299,15 +301,6 @@ async function deleteTicket(channel, guild) {
             [channel.id]);
     }, 5000);
 }
-
-con.connect(function (err) {
-    Logger.log("Connecting to database...");
-    if (err) {
-        Logger.log("&4Error while connecting to database: " + err);
-        throw err;
-    }
-    Logger.log("Connected to database!");
-});
 
 const Database = new DatabaseManager();
 Object.freeze(Database);

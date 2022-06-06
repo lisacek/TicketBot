@@ -13,8 +13,10 @@
     "@discordjs/builders": "^0.12.0",
     "@discordjs/rest": "^0.3.0",
     "discord-api-types": "^0.31.0",
+    "discord-canvas": "^1.4.1",
     "discord-html-transcripts": "^2.3.2",
     "discord.js": "^13.6.0",
+    "moment": "^2.29.3",
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.7"
   }

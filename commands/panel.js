@@ -20,7 +20,6 @@ const {Lang} = require("../utils/lang");
  */
 const {Category} = require("../cons/category");
 
-// TODO: category embed settings
 module.exports = {
     // Data containing command all the subcommands
     data: new SlashCommandBuilder()
@@ -170,7 +169,6 @@ module.exports = {
                 .setName('send')
                 .setDescription('Sends and setups panel.')),
 
-    //TODO: create more functions for panel
     async execute(interaction) {
         const botGuild = await Database.getCachedGuild(interaction.guild);
         //Check if the guild is cached.
@@ -379,7 +377,6 @@ async function updateCategory(interaction, botGuild) {
                 content: Lang.get("panel-color-invalid", botGuild.language),
                 ephemeral: true
             });
-            Logger.log("zde12");
             panel = botGuild.ticketCategories.get(category).embed;
             panel.color = value;
             try {
@@ -406,7 +403,6 @@ async function updateCategory(interaction, botGuild) {
                 });
                 return;
             }
-            Logger.log("zde");
             panel = botGuild.ticketCategories.get(category).embed;
             if (value === "delete" || value === "remove" || value === "null" || value.length === 0) {
                 delete panel.footer;
@@ -433,7 +429,7 @@ async function updateCategory(interaction, botGuild) {
     }
 }
 
-async function updatePanel(interaction, botGuild) {
+async function updatePaneel(interaction, botGuild) {
     const property = interaction.options._hoistedOptions[0].value;
     const value = interaction.options._hoistedOptions[1].value;
     let panel;
@@ -653,9 +649,17 @@ async function sendPanel(interaction, botGuild) {
         row.addComponents(messageButton);
     }
 
-    const embed = JSON.parse(botGuild.panel);
+    let embed;
+    try {
+        embed = JSON.parse(botGuild.panel);
+    } catch (e) {
+        embed = botGuild.panel;
+    }
     // Build description
-    embed.description = embed.description.join("\n");
+    try {
+        embed.description = embed.description.join("\n");
+    } catch (e) {
+    }
 
     channel.send({ephemeral: false, embeds: [embed], components: [row]}).then(message => {
         Database.executeUpdate('UPDATE guild_panels SET channel_id = ?, message_id = ? WHERE guild_id = ?', [channel.id, message.id, interaction.guild.id]);

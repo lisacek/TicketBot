@@ -9,6 +9,7 @@
   "ticket-delete": "Ticket will be deleted!",
   "ticket-closed": "Ticket was closed!",
   "ticket-owner": "Ticket Owner",
+  "ticket-reopen-title": "Ticket - Reopen",
   "ticket-name": "Ticket Name",
   "ticket-category": "Category",
   "ticket-transcript": "Ticket Transcript",
